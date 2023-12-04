@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
@@ -13,7 +13,7 @@ import java.util.*;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Integer, User> usersList = new HashMap<>();
-    private int generatedId = 0;
+    private int generatedId = 1;
 
     @GetMapping
     public List<User> findAllUsers() {
@@ -21,28 +21,9 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) throws ValidationException {
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
-            log.debug("Электронная почта не может быть пустой или не содержать @ :" + user.getEmail());
-            throw new ValidationException("Электронная почта не может быть пустой или не содержать @ !");
-        }
-        if (user.getLogin() == null || user.getLogin().contains(" ")) {
-            log.debug("Поля логин не может быть пустым или содержать пробелы: " + user.getLogin());
-            throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");
-        }
-        if (user.getName() == null) {
-            if (!user.getLogin().contains(" ")) {
-                user.setName(user.getLogin());
-            } else {
-                log.debug("Поля логин не может быть пустым или содержать пробелы : " + user.getLogin());
-                throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");
-            }
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.debug("Дата рождения не может быть в будущем: " + user.getBirthday());
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-        user.setId(++generatedId);
+    public User createUser(@Valid @RequestBody User user) throws ValidationException {
+        validator(user);
+        user.setId(generatedId++);
         usersList.put(user.getId(), user);
         log.info("Пользователь добавлен в список!" + user.getId() + " " + user.getName() + " " + user.getLogin()
                 + " " + user.getEmail() + " " + user.getBirthday());
@@ -50,12 +31,21 @@ public class UserController {
     }
 
     @PutMapping
-    public User upadateUser(@RequestBody User user) throws ValidationException {
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
-            log.debug("Электронная почта не может быть пустой или не содержать @ :" + user.getEmail());
-            throw new ValidationException("Электронная почта не может быть пустой или не содержать @ !");
+    public User upadateUser(@Valid @RequestBody User user) throws ValidationException {
+        validator(user);
+        if (usersList.containsKey(user.getId())) {
+            usersList.put(user.getId(), user);
+            log.info("Данные о пользователе были изменены: " + user.getId() + " " + user.getName() + " " + user.getLogin()
+                    + " " + user.getEmail() + " " + user.getBirthday());
+        } else {
+            log.info("Данного пользователя нет в списке: " + user.getName());
+            throw new ValidationException("Данного пользователя нет в списке: " + user.getName());
         }
-        if (user.getLogin() == null || user.getLogin().contains(" ")) {
+        return user;
+    }
+
+    private void validator(User user) throws ValidationException {
+        if (user.getLogin().contains(" ")) {
             log.debug("Поля логин не может быть пустым или содержать пробелы: " + user.getLogin());
             throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");
         }
@@ -67,25 +57,5 @@ public class UserController {
                 throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");
             }
         }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.debug("Дата рождения не может быть в будущем: " + user.getBirthday());
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-        usersList.forEach((key, value) -> {
-            if (user.getId() == key) {
-                usersList.replace(user.getId(), user);
-                log.info("Данные о пользователе были изменены: " + user.getId() + " " + user.getName() + " " + user.getLogin()
-                        + " " + user.getEmail() + " " + user.getBirthday());
-            } else {
-                try {
-                    log.info("Данного пользователя нет в списке: " + user.getName());
-                    throw new ValidationException("Данного пользователя нет в списке: " + user.getName());
-                } catch (ValidationException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        return user;
     }
-
 }
