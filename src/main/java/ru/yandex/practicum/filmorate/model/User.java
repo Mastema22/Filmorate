@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -15,13 +14,12 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class User {
-    @NonNull
     private int id;
-    @Email
+    @Email(message = "Электронная почта не может быть пустой или не содержать @ !")
     private String email;
-    @NotBlank
+    @NotBlank(message = "Поля логин не может быть пустым или содержать пробелы!")
     private String login;
     private String name;
-    @PastOrPresent
+    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 }
