@@ -22,7 +22,7 @@ public class UserController {
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) throws ValidationException {
-        validator(user);
+        validatingUser(user);
         user.setId(generatedId++);
         usersList.put(user.getId(), user);
         log.info("Пользователь добавлен в список!" + user.getId() + " " + user.getName() + " " + user.getLogin()
@@ -32,7 +32,7 @@ public class UserController {
 
     @PutMapping
     public User upadateUser(@Valid @RequestBody User user) throws ValidationException {
-        validator(user);
+        validatingUser(user);
         if (usersList.containsKey(user.getId())) {
             usersList.put(user.getId(), user);
             log.info("Данные о пользователе были изменены: " + user.getId() + " " + user.getName() + " " + user.getLogin()
@@ -44,7 +44,7 @@ public class UserController {
         return user;
     }
 
-    private void validator(User user) throws ValidationException {
+    private void validatingUser(User user) throws ValidationException {
         if (user.getLogin().contains(" ")) {
             log.debug("Поля логин не может быть пустым или содержать пробелы: " + user.getLogin());
             throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");

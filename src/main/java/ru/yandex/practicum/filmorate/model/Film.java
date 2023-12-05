@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.anatation.MinimumDate;
 
 
 import javax.validation.constraints.NotBlank;
@@ -21,6 +22,7 @@ public class Film {
     @NotBlank(message = "Описание не может быть пустым!")
     @Size(max = 200, message = "Максимальная длина описания — 200 символов!")
     private String description;
+    @MinimumDate(message = "Дата релиза должна быть не раньше 28 декабря 1895 года!")
     private LocalDate releaseDate;
     @PositiveOrZero(message = "Продолжительность фильма должна быть положительной")
     private double duration;

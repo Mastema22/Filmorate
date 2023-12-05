@@ -23,7 +23,6 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) throws ValidationException {
-        validatorFilm(film);
         film.setId(generatedId++);
         filmsList.put(film.getId(), film);
         log.info("Фильм был добавлен в список: " + film.getId() + " " + film.getName() + " " + film.getDescription()
@@ -34,7 +33,6 @@ public class FilmController {
 
     @PutMapping
     public Film addNewOrUpadateFilm(@Valid @RequestBody Film film) throws ValidationException {
-        validatorFilm(film);
         if (filmsList.containsKey(film.getId())) {
             filmsList.put(film.getId(), film);
             log.info("Данные о фильме были изменены: " + film.getId() + " " + film.getName() + " " + film.getDescription()
@@ -46,10 +44,4 @@ public class FilmController {
         return film;
     }
 
-    private void validatorFilm(Film film) throws ValidationException {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.debug("Дата релиза должна быть не раньше 28 декабря 1895 года: " + film.getReleaseDate());
-            throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года!");
-        }
-    }
 }
