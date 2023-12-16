@@ -6,10 +6,7 @@ import lombok.NonNull;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.model.anatation.MinimumDate;
 
-
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.HashSet;
