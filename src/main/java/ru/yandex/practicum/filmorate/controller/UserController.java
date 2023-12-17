@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -12,50 +14,55 @@ import java.util.*;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final Map<Integer, User> usersList = new HashMap<>();
-    private int generatedId = 1;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public List<User> findAllUsers() {
-        return new ArrayList<>(usersList.values());
+        return userService.findAllUsers();
     }
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) throws ValidationException {
-        validatingUser(user);
-        user.setId(generatedId++);
-        usersList.put(user.getId(), user);
-        log.info("Пользователь добавлен в список!" + user.getId() + " " + user.getName() + " " + user.getLogin()
-                + " " + user.getEmail() + " " + user.getBirthday());
-        return user;
+        return userService.createUser(user);
     }
 
     @PutMapping
     public User upadateUser(@Valid @RequestBody User user) throws ValidationException {
-        validatingUser(user);
-        if (usersList.containsKey(user.getId())) {
-            usersList.put(user.getId(), user);
-            log.info("Данные о пользователе были изменены: " + user.getId() + " " + user.getName() + " " + user.getLogin()
-                    + " " + user.getEmail() + " " + user.getBirthday());
-        } else {
-            log.info("Данного пользователя нет в списке: " + user.getName());
-            throw new ValidationException("Данного пользователя нет в списке: " + user.getName());
-        }
-        return user;
+        return userService.upadateUser(user);
     }
 
-    private void validatingUser(User user) throws ValidationException {
-        if (user.getLogin().contains(" ")) {
-            log.debug("Поля логин не может быть пустым или содержать пробелы: " + user.getLogin());
-            throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");
-        }
-        if (user.getName() == null) {
-            if (!user.getLogin().contains(" ")) {
-                user.setName(user.getLogin());
-            } else {
-                log.debug("Поля логин не может быть пустым или содержать пробелы : " + user.getLogin());
-                throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");
-            }
-        }
+    @GetMapping("/{id}")
+    public User findUserById(@NonNull @PathVariable Integer id) {
+        return userService.findUserById(id);
+    }
+
+    @DeleteMapping
+    public User removeUser(@Valid @RequestBody User user) {
+        return userService.removeUser(user);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addToFriendList(@NonNull @PathVariable("id") Integer id, @NonNull @PathVariable("friendId") Integer friendId) {
+        return userService.addToFriendList(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User removeFromFriendList(@NonNull @PathVariable("id") Integer id, @NonNull @PathVariable("friendId") Integer friendId) {
+        return userService.removeFromFriendList(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> friendsListForUser(@NonNull @PathVariable("id") Integer id) {
+        return userService.friendsListForUser(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> friendsListCommonOtherUsers(@NonNull @PathVariable("id") Integer id, @NonNull @PathVariable("otherId") Integer otherId) {
+        return userService.friendsListCommonOtherUsers(id, otherId);
+
     }
 }
