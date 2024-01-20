@@ -34,7 +34,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film addNewOrUpadateFilm(Film film) throws FilmNotFoundException {
+    public Film addNewOrUpadateFilm(Film film)  {
         if (filmsList.containsKey(film.getId())) {
             filmsList.put(film.getId(), film);
             log.info("Данные о фильме были изменены: " + film.getId() + " " + film.getName() + " " + film.getDescription()

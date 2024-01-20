@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,7 +9,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import javax.validation.Valid;
 import java.util.*;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -41,28 +39,29 @@ public class UserController {
     }
 
     @DeleteMapping
-    public User removeUser(@Valid @RequestBody User user) {
+    public User removeUser(@Valid @RequestBody User user) throws ValidationException {
         return userService.removeUser(user);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
-    public User addToFriendList(@NonNull @PathVariable("id") Integer id, @NonNull @PathVariable("friendId") Integer friendId) {
-        return userService.addToFriendList(id, friendId);
-    }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public User removeFromFriendList(@NonNull @PathVariable("id") Integer id, @NonNull @PathVariable("friendId") Integer friendId) {
-        return userService.removeFromFriendList(id, friendId);
-    }
 
     @GetMapping("/{id}/friends")
-    public List<User> friendsListForUser(@NonNull @PathVariable("id") Integer id) {
+    public List<User> friendsListForUser(@PathVariable("id") Integer id) {
         return userService.friendsListForUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> friendsListCommonOtherUsers(@NonNull @PathVariable("id") Integer id, @NonNull @PathVariable("otherId") Integer otherId) {
+    public List<User> friendsListCommonOtherUsers(@PathVariable("id") Integer id, @PathVariable("otherId") Integer otherId) {
         return userService.friendsListCommonOtherUsers(id, otherId);
+    }
 
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addToFriendList(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
+        userService.addToFriendList(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFromFriendList(@PathVariable("id") Integer id, @NonNull @PathVariable("friendId") Integer friendId) {
+        userService.removeFromFriendList(id, friendId);
     }
 }

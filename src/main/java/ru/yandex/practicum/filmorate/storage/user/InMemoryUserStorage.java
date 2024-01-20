@@ -64,7 +64,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug("Поля логин не может быть пустым или содержать пробелы: " + user.getLogin());
             throw new ValidationException("Поля логин не может быть пустым или содержать пробелы!");
         }
-        if (user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName().isEmpty()) {
             if (!user.getLogin().contains(" ")) {
                 user.setName(user.getLogin());
             } else {

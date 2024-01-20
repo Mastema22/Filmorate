@@ -1,33 +1,36 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friend.FriendDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
 @Slf4j
 @Service
-@AllArgsConstructor
 public class UserService {
-
     private final UserStorage userStorage;
+    private final FriendDbStorage friendDbStorage;
+
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, FriendDbStorage friendDbStorage) {
+        this.userStorage = userStorage;
+        this.friendDbStorage = friendDbStorage;
+    }
 
     public List<User> findAllUsers() {
         return userStorage.findAllUsers();
     }
 
-    public User createUser(User user) throws ValidationException {
-        log.info("Пользователь создан: " + user.getName());
+    public User createUser(User user) {
         return userStorage.createUser(user);
     }
 
-    public User upadateUser(User user) throws ValidationException {
-        log.info("Данные пользователя обновленны: " + user.getName());
+    public User upadateUser(User user)  {
         return userStorage.upadateUser(user);
     }
 
@@ -41,54 +44,36 @@ public class UserService {
     }
 
     public User removeUser(User user) {
-        log.info("Пользователь удален: " + user.getName());
         return userStorage.removeUser(user);
     }
 
-    public User addToFriendList(Integer id, Integer friendId) {
-        User user = findUserById(id);
-        User friend = findUserById(friendId);
-        if (user != null && friend != null) {
-            user.getFriends().add(friendId);
-            friend.getFriends().add(id);
-            log.info("Пользователь " + friend.getName() + " добавлен в друзья к " + user.getName());
+    public void addToFriendList(Integer userId, Integer friendId) {
+        if (Objects.equals(userId, friendId)) {
+            throw new ValidationException("Нельзя добавить самого себя в друзья!");
         }
-
-        return user;
+        friendDbStorage.addFriend(userId, friendId);
     }
 
-    public User removeFromFriendList(Integer id, Integer friendId) {
-        User user = findUserById(id);
-        User friend = findUserById(friendId);
-        if (user != null && friend != null) {
-            user.getFriends().remove(friendId);
-            friend.getFriends().remove(id);
-            log.info("Пользователь " + friend.getName() + " удален из списка друзей пользователя " + user.getName());
+
+    public void removeFromFriendList(Integer userId, Integer friendId) {
+        if (userId == friendId) {
+            throw new ValidationException("Нельзя удалить самого себя из друзей!");
         }
-        return user;
+        friendDbStorage.removeFriend(userId, friendId);
     }
 
     public List<User> friendsListForUser(Integer userId) {
-        List<User> result = new ArrayList<>();
-        User user = findUserById(userId);
-        if (user != null) {
-            for (Integer id : user.getFriends()) {
-                result.add(userStorage.findById(id));
-            }
-        }
-        return result;
+        return friendDbStorage.getFriends(userId);
     }
 
     public List<User> friendsListCommonOtherUsers(Integer userId, Integer otherId) {
-        List<User> result = new ArrayList<>();
-        User user = findUserById(userId);
-        User otherUser = findUserById(otherId);
+        Set<User> result = null;
+        User user = userStorage.findById(userId);
+        User otherUser = userStorage.findById(otherId);
         if (user != null && otherUser != null) {
-            Set<Integer> usersFriends = new HashSet<>(user.getFriends());
-            Set<Integer> otherUsersFriends = new HashSet<>(otherUser.getFriends());
-            usersFriends.retainAll(otherUsersFriends);
-            usersFriends.forEach(id -> result.add(findUserById(id)));
+            result = new HashSet<>(friendDbStorage.getFriends(userId));
+            result.retainAll(friendDbStorage.getFriends(otherId));
         }
-        return result;
+        return new ArrayList<User>(result);
     }
 }
