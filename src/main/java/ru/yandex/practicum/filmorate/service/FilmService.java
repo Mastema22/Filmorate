@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 
 import java.util.List;
@@ -14,10 +15,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@AllArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserService userService;
+    private final UserStorage userStorage;
+    private final LikeDbStorage likeDbStorage;
+
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       LikeDbStorage likeDbStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+        this.likeDbStorage = likeDbStorage;
+    }
 
     public List<Film> findAllFilms() {
         return filmStorage.findAllFilms();
@@ -27,7 +36,7 @@ public class FilmService {
         return filmStorage.createFilm(film);
     }
 
-    public Film addNewOrUpadateFilm(Film film) throws ValidationException {
+    public Film addNewOrUpadateFilm(Film film) {
         return filmStorage.addNewOrUpadateFilm(film);
     }
 
@@ -43,10 +52,11 @@ public class FilmService {
         return filmStorage.removeFilm(film);
     }
 
+
     public Film addLikeByFilm(Integer filmId, Integer userId) {
         Film film = filmStorage.findById(filmId);
-        if (film != null && userService.findUserById(userId) != null) {
-            filmStorage.findById(filmId).getLikes().add(userId);
+        if (film != null && userStorage.findById(userId) != null) {
+            likeDbStorage.addLike(filmId, userId);
             log.info("Поставлен like к фильму: " + film.getName());
         }
         return film;
@@ -54,7 +64,7 @@ public class FilmService {
 
     public Film removeLikeByFilm(Integer filmId, Integer userId) {
         Film film = filmStorage.findById(filmId);
-        if (film != null && userService.findUserById(userId) != null) {
+        if (film != null && userStorage.findById(userId) != null) {
             film.getLikes().remove(userId);
             log.info("Удален like к фильму: " + film.getName());
         }

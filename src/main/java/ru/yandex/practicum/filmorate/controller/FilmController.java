@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -27,16 +26,17 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        return filmService.createFilm(film);
+        filmService.createFilm(film);
+        return film;
     }
 
     @PutMapping
-    public Film addNewOrUpadateFilm(@Valid @RequestBody Film film) throws ValidationException {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         return filmService.addNewOrUpadateFilm(film);
     }
 
     @DeleteMapping
-    public Film removeFilm(@Valid @RequestBody Film film) {
+    public Film deleteFilm(@Valid @RequestBody Film film) {
         return filmService.removeFilm(film);
     }
 
