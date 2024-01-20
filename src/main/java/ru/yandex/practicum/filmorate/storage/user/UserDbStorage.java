@@ -98,7 +98,6 @@ public class UserDbStorage implements UserStorage {
         return users.get(0);
     }
 
-
     private RowMapper<User> userRowMapper() {
         return ((rs, rowNum) -> new User(
                 rs.getInt("user_id"),
