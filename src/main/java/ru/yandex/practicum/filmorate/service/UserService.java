@@ -26,11 +26,11 @@ public class UserService {
         return userStorage.findAllUsers();
     }
 
-    public User createUser(User user) throws ValidationException {
+    public User createUser(User user) {
         return userStorage.createUser(user);
     }
 
-    public User upadateUser(User user) throws ValidationException {
+    public User upadateUser(User user)  {
         return userStorage.upadateUser(user);
     }
 

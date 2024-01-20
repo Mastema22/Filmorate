@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @DeleteMapping
-    public User removeUser(@Valid @RequestBody User user) {
+    public User removeUser(@Valid @RequestBody User user) throws ValidationException {
         return userService.removeUser(user);
     }
 
